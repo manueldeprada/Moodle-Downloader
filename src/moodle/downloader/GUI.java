@@ -6,56 +6,32 @@
 package moodle.downloader;
 
 import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.plaf.LabelUI;
-import javax.swing.plaf.metal.MetalLabelUI;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
-
 
 /**
  *
  * @author prada
  */
 public class GUI extends javax.swing.JFrame {
+
+    boolean overwrite = false;
+    String baseurl = "https://cv.usc.es";
+    String cookie = "MoodleSession=pemhbkdjseflph6p43qm1v5ce7";
+    String folder = "descargas5";
+    float paso = 0;
 
     /**
      * Creates new form GUI
@@ -73,27 +49,24 @@ public class GUI extends javax.swing.JFrame {
         Action cut = new DefaultEditorKit.CutAction();
         cut.putValue(Action.NAME, "Cut");
         cut.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
-        popup.add( cut );
+        popup.add(cut);
 
         Action copy = new DefaultEditorKit.CopyAction();
         copy.putValue(Action.NAME, "Copy");
         copy.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control C"));
-        popup.add( copy );
+        popup.add(copy);
 
         Action paste = new DefaultEditorKit.PasteAction();
         paste.putValue(Action.NAME, "Paste");
         paste.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control V"));
-        popup.add( paste );
+        popup.add(paste);
 
-        new SmartScroller(this.jScrollPane3, SmartScroller.VERTICAL, SmartScroller.END);
-        
-        dirLabel.setText(System.getProperty("user.dir")+File.separator+folder);
-        
+        new SmartScroller(this.outputPane, SmartScroller.VERTICAL, SmartScroller.END);
+
+        dirLabel.setText(System.getProperty("user.dir") + File.separator + folder);
+
     }
-String baseurl="https://cv.usc.es";
-String cookie = "MoodleSession=pemhbkdjseflph6p43qm1v5ce7";
-String folder = "descargas5";
-float paso =0;
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -103,40 +76,41 @@ float paso =0;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        pastelabel = new javax.swing.JLabel();
+        toPasteCodePane = new javax.swing.JScrollPane();
         tocopyText = new javax.swing.JTextPane();
         cookieBox = new javax.swing.JTextField();
         loadButton = new javax.swing.JButton();
         copyButton = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        coursesPane = new javax.swing.JScrollPane();
         lista = new javax.swing.JList<>();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        instructions = new javax.swing.JLabel();
+        coursesLabel = new javax.swing.JLabel();
         barra = new javax.swing.JProgressBar();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        outputPane = new javax.swing.JScrollPane();
         term = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
+        videoButton = new javax.swing.JButton();
+        urlLabel = new javax.swing.JLabel();
+        urlField = new javax.swing.JTextField();
+        folderLabel = new javax.swing.JLabel();
+        folderButton = new javax.swing.JButton();
+        authorLabel = new javax.swing.JLabel();
+        githubLabel = new javax.swing.JLabel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
-        jScrollPane4 = new javax.swing.JScrollPane();
+        folderPane = new javax.swing.JScrollPane();
         dirLabel = new javax.swing.JTextArea();
-        jLabel8 = new javax.swing.JLabel();
+        currentFolderLabel = new javax.swing.JLabel();
+        overrideCheckBox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Moodle Downloader");
         setMinimumSize(new java.awt.Dimension(620, 640));
 
-        jLabel1.setText("Paste this in your browser console:");
+        pastelabel.setText("Paste this in your browser console:");
 
         tocopyText.setEditable(false);
         tocopyText.setText("(function() {\n    var a=RegExp(\"\"+\"MoodleSession\"+\"[^;]+\").exec(document.cookie); \n    var u=\"MoodleSession=\"+unescape(!!a ? a.toString().replace(/^[^=]+./,\"\") : \"\"); \n    copy(u);\n    console.log(u);\n})();");
-        jScrollPane1.setViewportView(tocopyText);
+        toPasteCodePane.setViewportView(tocopyText);
 
         cookieBox.setText("Paste here the cookie");
         cookieBox.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -159,45 +133,52 @@ float paso =0;
             }
         });
 
-        jScrollPane2.setViewportView(lista);
+        coursesPane.setViewportView(lista);
 
-        jLabel2.setText("<html>Instructions:<br>\n1.Log in to your moodle account.<br>\n2.Right-click in any point of the page.<br>\n3.Click \"Inspect element\".<br>\n4.Choose \"Console\" tab.<br>\n5.Paste the code given here.<br>\n6.Paste back the result here and hit the \"Load\" button.<br>\n");
+        instructions.setText("<html>Instructions:<br>\n1.Log in to your moodle account.<br>\n2.Right-click in any point of the page.<br>\n3.Click \"Inspect element\".<br>\n4.Choose \"Console\" tab.<br>\n5.Paste the code given here.<br>\n6.Paste back the result here and hit the \"Load\" button.<br>\n");
 
-        jLabel4.setText("Courses:");
+        coursesLabel.setText("Courses:");
 
         term.setEditable(false);
         term.setColumns(20);
         term.setRows(5);
-        jScrollPane3.setViewportView(term);
+        outputPane.setViewportView(term);
 
-        jButton1.setText("Help! How to get the cookie??");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        videoButton.setText("Help! How to get the cookie??");
+        videoButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                videoButtonActionPerformed(evt);
             }
         });
 
-        jLabel3.setText("Base Moodle URL");
+        urlLabel.setText("Base Moodle URL");
 
-        jTextField1.setText("https://cv.usc.es");
+        urlField.setText("https://cv.usc.es");
 
-        jLabel5.setText("Download base folder");
+        folderLabel.setText("Download base folder");
 
-        jButton2.setText("Choose folder");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        folderButton.setText("Choose folder");
+        folderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                folderButtonActionPerformed(evt);
             }
         });
 
-        jLabel6.setText("By Manuel de Prada");
+        authorLabel.setText("By Manuel de Prada");
 
-        jLabel7.setText("github.com/manudroid19");
+        githubLabel.setText("github.com/manudroid19");
 
         dirLabel.setColumns(20);
-        jScrollPane4.setViewportView(dirLabel);
+        folderPane.setViewportView(dirLabel);
 
-        jLabel8.setText("Current folder:");
+        currentFolderLabel.setText("Current folder:");
+
+        overrideCheckBox.setText("Overwrite files?");
+        overrideCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                overrideCheckBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -208,29 +189,29 @@ float paso =0;
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane3)
+                            .addComponent(outputPane)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(barra, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel7)))
+                                    .addComponent(authorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(githubLabel)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
+                                    .addComponent(pastelabel)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(cookieBox, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
-                                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                                            .addComponent(toPasteCodePane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGap(58, 58, 58)
-                                                .addComponent(jButton1))
+                                                .addComponent(videoButton))
                                             .addGroup(layout.createSequentialGroup()
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(copyButton)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                                .addComponent(instructions, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                 .addGap(0, 73, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
@@ -241,24 +222,26 @@ float paso =0;
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel4))
+                                    .addComponent(coursesPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(coursesLabel))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel5)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
-                                        .addComponent(jButton2))
+                                        .addComponent(folderLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 113, Short.MAX_VALUE)
+                                        .addComponent(folderButton))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel3)
+                                        .addComponent(urlLabel)
                                         .addGap(18, 18, 18)
-                                        .addComponent(jTextField1))
+                                        .addComponent(urlField))
+                                    .addComponent(folderPane)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel8)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addComponent(jScrollPane4))))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(currentFolderLabel)
+                                            .addComponent(overrideCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(0, 0, Short.MAX_VALUE)))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(filler1, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE))))
+                        .addComponent(filler1, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,9 +249,9 @@ float paso =0;
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1)
+                        .addComponent(pastelabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(toPasteCodePane, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cookieBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
@@ -279,41 +262,43 @@ float paso =0;
                                 .addGap(91, 91, 91))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(instructions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addComponent(jButton1)))
+                        .addComponent(videoButton)))
                 .addGap(1, 1, 1)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addComponent(loadButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4)
+                        .addComponent(coursesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(coursesPane, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(urlLabel)
+                            .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel5)
-                            .addComponent(jButton2))
+                            .addComponent(folderLabel)
+                            .addComponent(folderButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel8)
+                        .addComponent(currentFolderLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(60, 60, 60)))
+                        .addComponent(folderPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(overrideCheckBox)
+                        .addGap(30, 30, 30)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel6)
+                        .addComponent(authorLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel7))
+                        .addComponent(githubLabel))
                     .addComponent(barra, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                .addComponent(outputPane, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -322,260 +307,52 @@ float paso =0;
     }// </editor-fold>//GEN-END:initComponents
 
     private void cookieBoxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cookieBoxFocusGained
-    if(cookieBox.getText().contains("Paste here"))
-        cookieBox.setText("");        // TODO add your handling code here:
+        if (cookieBox.getText().contains("Paste here")) {
+            cookieBox.setText("");
+        }
     }//GEN-LAST:event_cookieBoxFocusGained
 
     private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
-        baseurl = this.jTextField1.getText();
+        Downloader down = new Downloader(baseurl, cookie, term, folder, lista, barra, paso, overwrite);
+        down.startDownload();
+        baseurl = this.urlField.getText();
         cookie = cookieBox.getText();
-        Thread thread = new Thread(new MyRunnable());
-        thread.start();
-        if(term.getText().contains("ERROR"))
-            term.append("\n");
-        term.append("Connecting to moodle...");
-        
-       
-        
     }//GEN-LAST:event_loadButtonActionPerformed
-    public class MyRunnable implements Runnable {
 
-    public void run(){
-       loadCursos();
-    }
-  }
-    private void loadCursos(){
-        String content=null;
-        
-        URL myUrl;
-        URLConnection urlConn;
-        try {
-            myUrl = new URL(baseurl +"/my/");
-            urlConn = myUrl.openConnection();
-            urlConn.setRequestProperty("Cookie", cookie);
-            urlConn.connect();
-            Scanner scanner = new Scanner(urlConn.getInputStream(), "UTF-8");
-            scanner.useDelimiter("\\Z");
-            term.append("\n"+"Fetching courses...");
-            content = scanner.next();
-            String[] cursosR =content.split(baseurl +"/course/view.php\\?id=");
-            List<Integer> cursos= new ArrayList<>();
-            List<String> conts= new ArrayList<>();
-            for(int i=1;i<cursosR.length;i++){
-                int s = Integer.parseInt(cursosR[i].substring(0, 4).replaceAll("[^0-9]", ""));
-                if(!cursos.contains(s))
-                    cursos.add(s);
-            }
-            DefaultListModel<String> model = new DefaultListModel<>();
-            lista.setModel(model);
-            barra.setValue((int)(paso=((float)1/(cursos.size()+1))*100));
-
-            for (Integer curso : cursos) {
-                conts.add(getCont(curso, "course"));
-                model.addElement(getTitle(conts.get(cursos.indexOf(curso))));
-            }
-            term.append("\n"+"Starting download...");
-            for(Integer curso : cursos){
-                descargarCurso(conts.get(cursos.indexOf(curso)),curso);
-                barra.setValue((int)(((float)(cursos.indexOf(curso)+2)/(cursos.size()+1))*100));
-            }
-        } catch (ProtocolException ex) {
-            term.append("\n"+"ERROR: Incorrect cookie");
-            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(FileNotFoundException ex){
-            term.append("\n"+"ERROR: URL is incorrect");
-        }catch (IOException ex) {
-            log(ex);
-        } 
-        term.append("\n"+"Descarga finalizada!");
-        barra.setValue(0);
-    }
-    private void descargarCurso(String cont,int id){
-        String tit = getTitle(cont);
-        String title = tit.split(" \\[")[0];
-        
-        File dir = new File(folder+File.separator+title);
-        dir.mkdirs();
-        new File(dir.getPath()+File.separator+"html").mkdirs();
-        File html = new File(dir.getPath()+File.separator+"html"+File.separator+title+".html");
-        
-        try(  PrintWriter out = new PrintWriter( html )  ){
-    out.println( cont );
-}       catch (FileNotFoundException ex) {
-            log(ex);
-        }
-        String[] split_res = cont.split("activity resource modtype\\_resource");
-        List<Integer> resources = new ArrayList<>();
-        for (int i=1;i<split_res.length;i++)
-            resources.add(Integer.parseInt(split_res[i].substring(14,19).replaceAll("[^0-9]", "")));
-        downloadRes(resources,id,title);
-        barra.setValue((int) (barra.getValue()+0.2*paso));
-        String[] split_folder = cont.split("activity folder modtype\\_folder");
-        List<Integer> folders = new ArrayList<>();
-        for (int i=1;i<split_folder.length;i++)
-            folders.add(Integer.parseInt(split_folder[i].substring(14,19).replaceAll("[^0-9]", "")));
-        downloadFolders(folders,tit, folder+File.separator+title);
-        
-        //int forum = Integer.parseInt(cont.split("activity forum modtype\\_forum")[1].substring(14,19).replaceAll("[^0-9]", ""));
-        //String forumHtml = getCont(forum,"mod/forum");
-        
-    }
-    
-    private void downloadRes(List<Integer> resources, int id, String title){
-        for(Integer res : resources){
-            try {
-                String link = baseurl +"/mod/resource/view.php?id="+res;
-                URL linkUrl = new URL(link);
-                HttpURLConnection con = (HttpURLConnection) linkUrl.openConnection();
-                con.setRequestProperty("Cookie", cookie);
-                
-                //term.append("\n"+"link: "+link);
-                InputStream is = con.getInputStream();
-                
-                Scanner scanner = null;
-                if(con.getURL().toString().equals(baseurl +"/course/view.php?id="+id))
-                    term.append("\n"+"No hay permisos.");//acceso no permitido
-                else if(con.getURL().toString().equals(link)){
-                    scanner = new Scanner(is, "UTF-8");
-                    scanner.useDelimiter("\\Z");
-                    String content = scanner.next();
-                    
-                    String[] split = content.split("mod_resource");
-                    URL lnk = new URL(content.substring(split[0].lastIndexOf("https"), split[0].length() + split[1].indexOf("\"")+12));
-                    downloadFile(lnk, folder+File.separator+title);
-
-                }else{
-                    File file = new File(con.getURL().toURI().getPath());
-                    String name = file.getName();
-                    term.append("\n"+"Downloading: "+folder+File.separator+title+File.separator+name);
-                    ReadableByteChannel rbc = Channels.newChannel(is);
-                    FileOutputStream fos = new FileOutputStream(folder+File.separator+title+File.separator+name);
-                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-
-                }
-                    
-            } catch (MalformedURLException ex) {
-                log(ex);
-            } catch (IOException | URISyntaxException ex) {
-                log(ex);
-            }
-        }
-    }
-    private void downloadFolders(List<Integer> folders, String curso, String dir){
-        for(Integer fol : folders){
-            String cont = getCont(fol, "mod/folder");
-            String title = getTitle(cont).replace(curso, "").replace(": ", "").trim();
-            
-            File dirf = new File(dir+File.separator+title);
-            if( dirf.exists())
-                for(int i=1;i<30;i++){
-                    dirf = new File(dir+File.separator+title+"("+i+")");
-                    if(!dirf.exists())
-                        break;
-                }
-            dirf.mkdirs();
-            String[] split_res = cont.split("fp-filename-icon\"><a href=\"");
-            List<String> resources = new ArrayList<>();
-            for (int i=1;i<split_res.length;i++){
-                try {
-                    downloadFile(new URL(split_res[i].substring(0,split_res[i].indexOf("\">"))),dirf.getPath());
-                } catch (MalformedURLException ex) {
-                    log(ex);
-                }
-                //term.append("\n"+split_res[i].substring(0,split_res[i].indexOf("\">")));
-            }
-            
-        }
-    }
-    private void downloadFile(URL lnk, String dirr){
-        try {
-            File file = new File(lnk.toURI().getPath());
-            String name = file.getName();
-            term.append("\n"+"Downloading: "+dirr+File.separator+name);
-            HttpURLConnection con2 = (HttpURLConnection) lnk.openConnection();
-            con2.setRequestProperty("Cookie", cookie);
-            ReadableByteChannel rbc = Channels.newChannel(con2.getInputStream());
-            FileOutputStream fos = new FileOutputStream(dirr+File.separator+name);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        } catch (URISyntaxException ex) {
-            log(ex);
-        } catch (FileNotFoundException ex) {
-            log(ex);
-        } catch (IOException ex) {
-            log(ex);
-        }
-    }
-    private String getTitle(String content){
-        String title = content.substring(content.indexOf("<title>") + 7, content.indexOf("</title>")); //Curso: 
-        return title.substring(title.indexOf(": ")+2, title.length());
-    }
-    private String getCont(int id, String type){
-        String content=null;
-        URL myUrl;
-        URLConnection urlConn;
-        try {
-            myUrl = new URL(baseurl +"/"+type+"/view.php?id="+id);
-           
-            urlConn = myUrl.openConnection();
-            urlConn.setRequestProperty("Cookie", cookie);
-            urlConn.connect();
-            Scanner scanner = new Scanner(urlConn.getInputStream(), "UTF-8");
-            scanner.useDelimiter("\\Z");
-            content = scanner.next();
-        } catch (MalformedURLException ex) {
-            log(ex);
-        } catch (IOException ex) {
-            log(ex);
-        }
-        return content;
-    }
     private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
-StringSelection stringSelection = new StringSelection(tocopyText.getText());
-Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
-clpbrd.setContents(stringSelection, null);    
+        StringSelection stringSelection = new StringSelection(tocopyText.getText());
+        Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clpbrd.setContents(stringSelection, null);
 
     }//GEN-LAST:event_copyButtonActionPerformed
-    private void log(Exception ex){
-            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw));
-            term.append("\n"+"ERROR: Unknown error. Debug info: "+sw.toString());            
 
-    }
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-         JFileChooser chooser = new JFileChooser(); 
-    chooser.setCurrentDirectory(new java.io.File("."));
-    chooser.setDialogTitle("Select the download directory");
-    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    //
-    // disable the "All files" option.
-    //
-    chooser.setAcceptAllFileFilterUsed(false);
-    //    
-    if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
-      dirLabel.setText(chooser.getSelectedFile().getPath());
-      folder = chooser.getSelectedFile().getPath();
-      }
+    private void folderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_folderButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new java.io.File("."));
+        chooser.setDialogTitle("Select the download directory");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            dirLabel.setText(chooser.getSelectedFile().getPath());
+            folder = chooser.getSelectedFile().getPath();
+        }
+    }//GEN-LAST:event_folderButtonActionPerformed
 
-     
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void videoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_videoButtonActionPerformed
 
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-        try {
-            desktop.browse(new URL("https://youtu.be/XjOylmSQAwE").toURI());
-        }   catch (MalformedURLException ex) { 
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(new URL("https://youtu.be/XjOylmSQAwE").toURI());
+            } catch (URISyntaxException | IOException ex) {
                 Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-            } 
-    }
-                // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+            }
+        }
+    }//GEN-LAST:event_videoButtonActionPerformed
+
+    private void overrideCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overrideCheckBoxActionPerformed
+        overwrite = this.overrideCheckBox.isSelected();
+    }//GEN-LAST:event_overrideCheckBoxActionPerformed
 
     /**
      * @param args the command line arguments
@@ -588,7 +365,7 @@ clpbrd.setContents(stringSelection, null);
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("GTK+".equals(info.getName())||"Windows".equals(info.getName())) {
+                if ("GTK+".equals(info.getName()) || "Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
@@ -605,38 +382,37 @@ clpbrd.setContents(stringSelection, null);
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GUI().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new GUI().setVisible(true);
         });
-        
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel authorLabel;
     private javax.swing.JProgressBar barra;
     private javax.swing.JTextField cookieBox;
     private javax.swing.JButton copyButton;
+    private javax.swing.JLabel coursesLabel;
+    private javax.swing.JScrollPane coursesPane;
+    private javax.swing.JLabel currentFolderLabel;
     private javax.swing.JTextArea dirLabel;
     private javax.swing.Box.Filler filler1;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton folderButton;
+    private javax.swing.JLabel folderLabel;
+    private javax.swing.JScrollPane folderPane;
+    private javax.swing.JLabel githubLabel;
+    private javax.swing.JLabel instructions;
     private javax.swing.JList<String> lista;
     private javax.swing.JButton loadButton;
+    private javax.swing.JScrollPane outputPane;
+    private javax.swing.JCheckBox overrideCheckBox;
+    private javax.swing.JLabel pastelabel;
     private javax.swing.JTextArea term;
+    private javax.swing.JScrollPane toPasteCodePane;
     private javax.swing.JTextPane tocopyText;
+    private javax.swing.JTextField urlField;
+    private javax.swing.JLabel urlLabel;
+    private javax.swing.JButton videoButton;
     // End of variables declaration//GEN-END:variables
 }
