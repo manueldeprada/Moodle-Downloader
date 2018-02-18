@@ -29,7 +29,7 @@ import javax.swing.text.DefaultEditorKit;
 public class GUI extends javax.swing.JFrame {
 
     private boolean overwrite = false;
-    private String baseurl = "https://cv.usc.es";
+    private String baseurl = "";
     private String cookie = "MoodleSession=pemhbkdjseflph6p43qm1v5ce7";
     private String carpetaBase = "descargas";
     private Downloader down;
@@ -352,6 +352,10 @@ public class GUI extends javax.swing.JFrame {
         baseurl = this.urlField.getText();
         carpetaBase = dirLabel.getText();
         cookie = cookieBox.getText();
+        if(!cookie.contains("MoodleSession=")){
+            cookie="MoodleSession="+cookie;
+        }
+        cookieBox.setText(cookie);
         down = new Downloader(this);
         down.startDownload();
     }//GEN-LAST:event_loadButtonActionPerformed

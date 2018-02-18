@@ -81,7 +81,7 @@ public class Downloader {
             return;
         }
         archivos = resources.size();
-        descargados=0;
+        descargados = 0;
         int factor = 10;
         int lotes = (int) Math.ceil(((double) resources.size()) / (double) factor);
         HashMap<String, String> resourcesADescargar = (HashMap<String, String>) resources.clone();
@@ -135,7 +135,7 @@ public class Downloader {
             String[] cursosR = content.split(baseurl + "/course/view.php\\?id="); //Spliteamos y conseguimos los numeros de curso
             List<String> contenidoCursos = new ArrayList<>();
             for (int i = 1; i < cursosR.length; i++) {
-                int s = Integer.parseInt(cursosR[i].substring(0, 4).replaceAll("[^0-9]", ""));
+                int s = Integer.parseInt(cursosR[i].substring(0, cursosR[i].indexOf("\"")).replaceAll("[^0-9]", ""));
                 if (!cursos.contains(s)) {
                     cursos.add(s);
                 }
@@ -190,7 +190,7 @@ public class Downloader {
         String[] split_folder = htmlCurso.split("activity folder modtype\\_folder");
         List<Integer> folders = new ArrayList<>();
         for (int i = 1; i < split_folder.length; i++) {
-            folders.add(Integer.parseInt(split_folder[i].substring(14, 19).replaceAll("[^0-9]", "")));
+            folders.add(Integer.parseInt(split_folder[i].substring(14).split("\">")[0].replaceAll("[^0-9]", "")));
         }
         procesarCarpetas(folders, tituloCursoConCodigo, directorioCurso.getPath(), resources);
 
@@ -208,7 +208,7 @@ public class Downloader {
 
         String[] split_res = htmlCurso.split("activity resource modtype\\_resource");
         for (int i = 1; i < split_res.length; i++) {
-            saveRecurso(baseurl + "/mod/resource/view.php?id=" + Integer.parseInt(split_res[i].substring(14, 19).replaceAll("[^0-9]", "")), directorioCurso.getPath());
+            saveRecurso(baseurl + "/mod/resource/view.php?id=" + Integer.parseInt(split_res[i].substring(14).split("\">")[0].replaceAll("[^0-9]", "")), directorioCurso.getPath());
         }
         GUI.getTerm().append("\n" + "Course " + tituloCurso + " explored.");
         setCursoAcabado(idCurso);
@@ -229,7 +229,7 @@ public class Downloader {
             directorioSeccion.mkdirs();
             String[] split_res = htmlSeccion.split("activity resource modtype\\_resource");
             for (int i = 1; i < split_res.length; i++) {
-                saveRecurso(baseurl + "/mod/resource/view.php?id=" + Integer.parseInt(split_res[i].substring(14, 19).replaceAll("[^0-9]", "")), carpetaBase + File.separator + tituloCurso + File.separator + tituloSeccion);
+                saveRecurso(baseurl + "/mod/resource/view.php?id=" + Integer.parseInt(split_res[i].substring(14).split("\">")[0].replaceAll("[^0-9]", "")), carpetaBase + File.separator + tituloCurso + File.separator + tituloSeccion);
             }
         }
     }
@@ -286,6 +286,8 @@ public class Downloader {
             Scanner scanner = new Scanner(urlConn.getInputStream(), "UTF-8");
             scanner.useDelimiter("\\Z");
             content = scanner.next();
+        } catch (FileNotFoundException ex) {
+            log(ex);
         } catch (MalformedURLException ex) {
             log(ex);
         } catch (IOException ex) {
@@ -307,19 +309,29 @@ public class Downloader {
 
     private String getTitle(String content) {
         String title = content.substring(content.indexOf("<title>") + 7, content.indexOf("</title>")); //Curso: 
-        return title.substring(title.indexOf(": ") + 2, title.length());
+        return title.substring(title.indexOf(": ") + 2, title.length()).replace("\\", "-").replace("/", "-");
     }
 
     private String getTitleSection(String section) {
-        String[] partir = section.split("<h3 class=\"sectionname\">");
-        String a = partir[1].split("</h3>")[0];
-        a = a.replaceAll(":", ".");
-        a = a.replace("<span>", "");
-        a = a.replace("</span>", "");
-        if (a.charAt(a.length() - 1) == '.') {
-            a = a.substring(0, a.length() - 1);
+        String titulo="";
+        try {
+            String[] partir = section.split("<h3 class=\"sectionname");
+            String tituloCrudo=partir[1].substring(partir[1].indexOf(">"));
+            titulo = tituloCrudo.split("</h3>")[0];
+            if(titulo.contains("href")){
+                titulo = titulo.substring(titulo.lastIndexOf("\">")+2,titulo.indexOf("</"));
+            }
+            titulo = titulo.replaceAll(":", ".");
+            titulo = titulo.replace("<span>", "");
+            titulo = titulo.replace("</span>", "");
+            titulo = titulo.replace(">", "");
+            if (titulo.charAt(titulo.length() - 1) == '.') {
+                titulo = titulo.substring(0, titulo.length() - 1);
+            }
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            log(ex);
         }
-        return a;
+        return titulo;
     }
 
     private void saveRecurso(String a, String b) {

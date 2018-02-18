@@ -17,10 +17,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextArea;
 
 /**
- * 
+ *
  * @author mprad
  */
 public class DownWorker implements Runnable {
@@ -36,7 +38,7 @@ public class DownWorker implements Runnable {
         this.cookie = cookie;
         this.term = term;
         this.overwrite = overwrite;
-        this.down=down;
+        this.down = down;
     }
 
     @Override
@@ -44,42 +46,15 @@ public class DownWorker implements Runnable {
         for (String url : paquete.keySet()) {
             String ruta = paquete.get(url);
             try {
-
-                URL linkUrl = new URL(url);
-                HttpURLConnection con = (HttpURLConnection) linkUrl.openConnection();
-                con.setRequestProperty("Cookie", cookie);
-
-                InputStream is = con.getInputStream();
-
-                Scanner scanner = null;
-                if (con.getURL().toString().contains("/course/view.php?id=")) {
-                    term.append("\n" + "No hay permisos.");//acceso no permitido
-                } else if (con.getURL().toString().equals(url) && !url.contains("mod_folder/content")) {
-                    scanner = new Scanner(is, "UTF-8");
-                    scanner.useDelimiter("\\Z");
-                    String content = scanner.next();
-
-                    String[] split = content.split("mod_resource");
-                    URL lnk = new URL(content.substring(split[0].lastIndexOf("https"), split[0].length() + split[1].indexOf("\"") + 12));
-                    downloadFile(lnk, ruta);
-                } else {
-                    File file = new File(con.getURL().toURI().getPath());
-                    String name = file.getName();
-                    if (overwrite || !new File(ruta + File.separator + name).exists()) {
-                        term.append("\n" + "Downloading: " + ruta + File.separator + name);
-                        ReadableByteChannel rbc = Channels.newChannel(is);
-                        FileOutputStream fos = new FileOutputStream(ruta + File.separator + name);
-                        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                    } else {
-                        term.append("\n" + "Already downloaded: " + ruta + File.separator + name);
-                    }
-                    down.descargado();
-                }
-
+                download(url, ruta);
             } catch (MalformedURLException ex) {
                 Downloader.log(ex);
             } catch (IOException | URISyntaxException ex) {
-                Downloader.log(ex);
+                try {
+                    download(url,ruta);
+                } catch (IOException | URISyntaxException ex1) {
+                    Downloader.log(ex);
+                }
             }
         }
     }
@@ -108,6 +83,39 @@ public class DownWorker implements Runnable {
             System.out.println(donde.getPath());
             System.out.println(ex.getMessage());
 
+        }
+    }
+
+    private void download(String url, String ruta) throws MalformedURLException, IOException, URISyntaxException {
+        URL linkUrl = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) linkUrl.openConnection();
+        con.setRequestProperty("Cookie", cookie);
+
+        InputStream is = con.getInputStream();
+
+        Scanner scanner = null;
+        if (con.getURL().toString().contains("/course/view.php?id=")) {
+            term.append("\n" + "No hay permisos.");//acceso no permitido
+        } else if (con.getURL().toString().equals(url) && !url.contains("mod_folder/content")) {
+            scanner = new Scanner(is, "UTF-8");
+            scanner.useDelimiter("\\Z");
+            String content = scanner.next();
+
+            String[] split = content.split("mod_resource");
+            URL lnk = new URL(content.substring(split[0].lastIndexOf("https"), split[0].length() + split[1].indexOf("\"") + 12));
+            downloadFile(lnk, ruta);
+        } else {
+            File file = new File(con.getURL().toURI().getPath());
+            String name = file.getName();
+            if (overwrite || !new File(ruta + File.separator + name).exists()) {
+                term.append("\n" + "Downloading: " + ruta + File.separator + name);
+                ReadableByteChannel rbc = Channels.newChannel(is);
+                FileOutputStream fos = new FileOutputStream(ruta + File.separator + name);
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            } else {
+                term.append("\n" + "Already downloaded: " + ruta + File.separator + name);
+            }
+            down.descargado();
         }
     }
 
