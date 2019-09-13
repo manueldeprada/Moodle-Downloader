@@ -64,6 +64,13 @@ public class DownWorker implements Runnable {
         try {
             File file = new File(lnk.toURI().getPath());
             String name = file.getName();
+            int i=1;
+            while(!overwrite && new File(dirr + File.separator + name).exists()){
+                String[] nombreYExtension = name.split("\\.(?=[^\\.]+$)");
+                nombreYExtension[0] = nombreYExtension[0]+"_"+i;
+                i++;
+                name = nombreYExtension[0]+"."+nombreYExtension[1];
+            }
             if (overwrite || !new File(dirr + File.separator + name).exists()) {
                 term.append("\n" + "Downloading: " + dirr + File.separator + name);
                 HttpURLConnection con2 = (HttpURLConnection) lnk.openConnection();
